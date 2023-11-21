@@ -78,8 +78,7 @@ class Program
     if(string.IsNullOrEmpty(queueName))
       CommandLine.ErrorExit(
         "\nVocê deve inserir um nome para a fila.\nExecute o comando sem argumentos para exibir a documentação de ajuda.");
-
-    // If a dead-letter queue wasn't given, create one
+    
     // Se uma fila de dead-letter não foi fornecida, cria uma
     if(string.IsNullOrEmpty(deadLetterQueueUrl))
     {
@@ -89,7 +88,7 @@ class Program
       await ShowAllAttributes(sqsClient, deadLetterQueueUrl);
     }
 
-    // Create the message queue
+    // Cria uma fila de mensagens
     string messageQueueUrl = await CreateQueue(
       sqsClient, queueName, deadLetterQueueUrl, maxReceiveCount, receiveWaitTime);
     Console.WriteLine($"Sua nova fila de mensagens:");
@@ -111,7 +110,7 @@ class Program
     {
       attrs.Add(QueueAttributeName.ReceiveMessageWaitTimeSeconds, receiveWaitTime);
       attrs.Add(QueueAttributeName.RedrivePolicy,
-        $"{{\"deadLetterTargetArn\":\"{await GetQueueArn(sqsClient, deadLetterQueueUrl)}\"," +
+        $"{{\"deadLetterTargetAmazonResourceName\":\"{await GetQueueArn(sqsClient, deadLetterQueueUrl)}\"," +
         $"\"maxReceiveCount\":\"{maxReceiveCount}\"}}");
       // Adicione outros atributos para fila de mensagem como VisibilityTimeout
     }
@@ -142,54 +141,53 @@ class Program
   }
     
   //
-  // Method to put a message on a queue
-  // Could be expanded to include message attributes, etc., in a SendMessageRequest
+  // Método para inserir uma mensagem em uma fila
+  // Poderia ser exapdandido para incluir atributos da mensagem, etc., em um objeto SendMessageRequest
   private static async Task SendMessage(
     IAmazonSQS sqsClient, string qUrl, string messageBody)
   {
     SendMessageResponse responseSendMsg =
       await sqsClient.SendMessageAsync(qUrl, messageBody);
-    Console.WriteLine($"Message added to queue\n  {qUrl}");
+    Console.WriteLine($"Mensagem adicionada à fila\n  {qUrl}");
     Console.WriteLine($"HttpStatusCode: {responseSendMsg.HttpStatusCode}");
   }
 
 
   //
-  // Method to put a batch of messages on a queue
-  // Could be expanded to include message attributes, etc.,
-  // in the SendMessageBatchRequestEntry objects
+  // Método para inserir um grupo de mensagens em uma fila
+  // Poderia ser exapdandido para incluir atributos da mensagem, etc., no objeto SendMessageBatchRequestEntry
   private static async Task SendMessageBatch(
     IAmazonSQS sqsClient, string qUrl, List<SendMessageBatchRequestEntry> messages)
   {
-    Console.WriteLine($"\nSending a batch of messages to queue\n  {qUrl}");
+    Console.WriteLine($"\nEnviando um pacote de mensagens para a fila\n  {qUrl}");
     SendMessageBatchResponse responseSendBatch =
       await sqsClient.SendMessageBatchAsync(qUrl, messages);
-    // Could test responseSendBatch.Failed here
+    // Poderia testar responseSendBatch.Failed aqui
     foreach(SendMessageBatchResultEntry entry in responseSendBatch.Successful)
-      Console.WriteLine($"Message {entry.Id} successfully queued.");
+      Console.WriteLine($"Mensagem {entry.Id} enfileirada com sucesso.");
   }
 
 
   //
-  // Method to get input from the user
-  // They can provide messages to put in the queue or exit the application
+  // Método para receber o input do usuário
+  // O usuário pode fornecer mensagens para inserir na fila ou sair da aplicação
   private static async Task InteractWithUser(IAmazonSQS sqsClient, string qUrl)
   {
     string response;
     while (true)
     {
-      // Get the user's input
-      Console.WriteLine("\nType a message for the queue or \"exit\" to quit:");
+      // Pega o input do usuário
+      Console.WriteLine("\nDigite uma mensagem para a fila ou \"exit\" para sair:");
       response = Console.ReadLine();
-      if(response.ToLower() == "exit") break;
+      if (response.ToLower() == "exit") break;
 
-      // Put the user's message in the queue
+      // Coloca a mensagem do usuário na fila
       await SendMessage(sqsClient, qUrl, response);
     }
   }
   
   //
-  // Method to delete all messages from the queue
+  // Método para deletar todas as mensagens da fila
   private static async Task DeleteAllMessages(IAmazonSQS sqsClient, string qUrl)
   {
     Console.WriteLine($"\nPurging messages from queue\n  {qUrl}...");
@@ -216,7 +214,7 @@ class Program
   // Neste exemplo, somente exibe a mensagem no console
   private static bool ProcessMessage(Message message)
   {
-    Console.WriteLine($"\nMessage body of {message.MessageId}:");
+    Console.WriteLine($"\nO corpo da mensagem é {message.MessageId}:");
     Console.WriteLine($"{message.Body}");
     return true;
   }
