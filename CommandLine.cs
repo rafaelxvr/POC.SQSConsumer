@@ -1,8 +1,5 @@
 ﻿namespace SQSReceiveMessages;
 
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-  // Class that represents a command line on the console or terminal.
-  // (This is the same for all examples. When you have seen it once, you can ignore it.)
   static class CommandLine
   {
     //
