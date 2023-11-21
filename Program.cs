@@ -19,8 +19,8 @@ class Program
   private const string TextMessage = "Just a plain text message.";
 
   // Credenciais AWS
-  private const string AccessKey = "AKIAYMGTRRKM54WJKXQH";
-  private const string SecretKey = "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";
+  private const string AccessKey = "AccessKey";
+  private const string SecretKey = "SecretKey";
   
   static async Task Main(string[] args)
   {
